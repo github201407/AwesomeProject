@@ -24,11 +24,12 @@ project.xcworkspace
 
 # Android/IJ
 #
-.idea
-.gradle
+*.idea
+*.gradle
 local.properties
 
 # node.js
 #
 node_modules/
 npm-debug.log
+*.iml
