@@ -15,6 +15,7 @@ var {
   Image,
   View,
   ListView,
+  ScrollView,
   DrawerLayoutAndroid, 
   TouchableHighlight,
   ProgressBarAndroid,
@@ -51,19 +52,23 @@ var AwesomeProject = React.createClass({
             title={title}
             titleColor="white"
             style={styles.toolbar} />
-          <ListView
-            dataSource={this.state.dataSource}
-            renderRow={this._renderRow}
-          />
-          <View style={styles.container}>
-            <Text>{movie.title}</Text>
-            <Text>{movie.year}</Text>
-            <Image
-              source={{uri: movie.posters.thumbnail}}
-              style={styles.thumbnail}
+          <ScrollView>
+            <PhoneLocation />
+            <ListView
+              dataSource={this.state.dataSource}
+              renderRow={this._renderRow}
             />
-          </View>
-          <Download />
+            <View style={styles.container}>
+              <Text>{movie.title}</Text>
+              <Text>{movie.year}</Text>
+              <Image
+                source={{uri: movie.posters.thumbnail}}
+                style={styles.thumbnail}
+              />
+            </View>
+            <Download />
+            <ListDataFromNet />
+          </ScrollView>
           <View style={styles.tabrow}><Cell>首页</Cell><Cell/><Cell/><Cell/><Cell/></View>
         </View>
       </DrawerLayoutAndroid>
@@ -112,11 +117,11 @@ var Download = React.createClass({
         .done();
     },
     render: function() {
-    if (!this.state.movies) {
-      return this.renderLoadingView();
-    }
-    var movie = this.state.movies[0];
-    return this.renderMovie(movie);
+      if (!this.state.movies) {
+        return this.renderLoadingView();
+      }
+      var movie = this.state.movies[0];
+      return this.renderMovie(movie);
   },
   renderLoadingView: function() {
     return (
@@ -143,9 +148,129 @@ var Download = React.createClass({
   },
 });
 
+var phoneUrl = 'http://apicloud.mob.com/mobile/address/query?key=d0b1fd2d94ac&phone=15260663922';
+var PhoneLocation = React.createClass({
+  getInitialState: function() {
+    return {
+      movies: null,
+    };
+  },
+  componentDidMount: function() {
+    this.fetchData();
+  },
+  fetchData: function() {
+      fetch(phoneUrl)
+        .then((response) => response.json())
+        .then((responseData) => {
+          this.setState({
+            movies: responseData.result,
+          });
+        })
+        .done();
+    },
+    render: function() {
+      if (!this.state.movies) {
+        return this.renderLoadingView();
+      }
+      var movie = this.state.movies;
+      return this.renderMovie(movie);
+  },
+  renderLoadingView: function() {
+    return (
+      <View style={styles.container}>
+        <Text>
+          Loading movies...
+        </Text>
+      </View>
+    );
+  },
+  renderMovie: function(movie) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.rightContainer}>
+          <Text style={styles.title}>{movie.city}</Text>
+          <Text style={styles.title}>{movie.cityCode}</Text>
+          <Text style={styles.title}>{movie.province}</Text>
+          <Text style={styles.title}>{movie.zipCode}</Text>
+        </View>
+      </View>
+    );
+  },
+});
+
+var ListDataFromNet = React.createClass({
+  getInitialState: function() {
+    return {
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+      loaded: false,
+    };
+  },
+  componentDidMount: function() {
+    this.fetchData();
+  },
+  fetchData: function() {
+      fetch(REQUEST_URL)
+        .then((response) => response.json())
+        .then((responseData) => {
+          this.setState({
+           dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
+           loaded: true,
+          });
+        })
+        .done();
+    },
+    render: function() {
+      if (!this.state.loaded) {
+        return this.renderLoadingView();
+      }
+      return  (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderMovie}
+        style={styles.listView}
+      />
+    );
+  },
+  renderLoadingView: function() {
+    return (
+      <View style={styles.container}>
+        <Text>
+          Loading movies...
+        </Text>
+      </View>
+    );
+  },
+  renderMovie: function(movie) {
+    return (
+      <View style={styles.netlist}>
+        <Image
+          source={{uri: movie.posters.thumbnail}}
+          style={styles.thumbnail}
+        />
+        <View style={styles.rightContainer}>
+          <Text style={styles.title}>{movie.title}</Text>
+          <Text style={styles.year}>{movie.year}</Text>
+        </View>
+      </View>
+    );
+  },
+});
+
 var CELL_SIZE = 60;
 var CELL_MARGIN = 4;
 var styles = StyleSheet.create({
+  netlist: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  rightContainer: {
+    flex: 1,
+  },
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
