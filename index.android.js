@@ -247,7 +247,7 @@ var ListDataFromNet = React.createClass({
       <View style={styles.netlist}>
         <Image
           source={{uri: movie.posters.thumbnail}}
-          style={styles.thumbnail}
+          style={styles.imagestyle}
         />
         <View style={styles.rightContainer}>
           <Text style={styles.title}>{movie.title}</Text>
@@ -261,6 +261,13 @@ var ListDataFromNet = React.createClass({
 var CELL_SIZE = 60;
 var CELL_MARGIN = 4;
 var styles = StyleSheet.create({
+  imagestyle: {
+    width: 72,
+    height: 72,
+    margin: 5,
+    borderRadius: 1,
+    alignItems: 'center',
+  },
   netlist: {
     flex: 1,
     flexDirection: 'row',
