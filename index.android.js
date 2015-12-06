@@ -11,6 +11,7 @@ var MOCKED_MOVIES_DATA = [
 var {
   AppRegistry,
   StyleSheet,
+  PixelRatio,
   Text,
   Image,
   View,
@@ -307,8 +308,9 @@ var styles = StyleSheet.create({
     shadowRadius: 2,
   },
   imagestyle: {
-    width: 72,
-    height: 72,
+    height:72,
+    width:72,
+    resizeMode:Image.resizeMode.contain,
     margin: 5,
     borderRadius: 1,
     alignItems: 'center',
@@ -323,7 +325,7 @@ var styles = StyleSheet.create({
     marginBottom: 5,
     borderRadius: 5,
     padding: 3,
-    borderWidth: 1, 
+    borderWidth: 1/PixelRatio.get(), 
     borderColor: 'red',
   },
   rightContainer: {
