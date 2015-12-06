@@ -23,14 +23,67 @@ var {
   ToastAndroid,
 } = React;
 
-var AwesomeProject = React.createClass({
+var butlerUrl = 'http://115.28.9.224:8080/csegj/egjZdController.do?query&phoneNum=&type=all&pageId=1';
+var CasesListView = React.createClass({
   getInitialState: function() {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
       return {
-        dataSource: ds.cloneWithRows(['row 1', 'row 2', 'row 3', 'row 4', 'row 5', 'row 6']),
+          dataSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2,}),
+          loaded: false,
       };
     },
-
+  componentDidMount: function() {
+    this.fetchData();
+  },
+  fetchData: function() {
+      fetch(butlerUrl)
+        .then((response) => response.json())
+        .then((responseData) => {
+          this.setState({
+           dataSource: this.state.dataSource.cloneWithRows(responseData.msg),
+           loaded: true,
+          });
+        })
+        .done();
+    },
+    render: function() {
+      if (!this.state.loaded) {
+        return this.renderLoadingView();
+      }
+      return  ( 
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderMovie}
+        style={styles.listView}
+      />
+    );
+  },
+  renderLoadingView: function() {
+    return (
+      <View style={styles.container}>
+        <Text>
+          Loading movies...
+        </Text>
+      </View>
+    );
+  },
+  renderMovie: function(msg) {
+    return (
+      <View style={styles.netlist}>
+        <Image
+          source={{uri: msg.caserImgUrl!=''?msg.caserImgUrl:'http://i.imgur.com/UePbdph.jpg'}}
+          style={styles.imagestyle}
+        />
+        <View style={styles.rightContainer}>
+          <Text style={[styles.title,{alignSelf:'flex-end',marginRight:10}]}>{msg.caseReportTime}</Text>
+          <Text style={styles.title}>{msg.caseDes}</Text>
+          <Text style={styles.year}>{msg.caseLocation}</Text>
+        </View>
+      </View>
+    );
+  },
+});
+var AwesomeProject = React.createClass({
   render: function() {
     var navigationView = (
       <View style={styles.drawer}>
@@ -53,23 +106,8 @@ var AwesomeProject = React.createClass({
             titleColor="white"
             style={styles.toolbar} />
           <ScrollView>
-            <PhoneLocation />
-            <ListView
-              dataSource={this.state.dataSource}
-              renderRow={this._renderRow}
-            />
-            <View style={styles.container}>
-              <Text>{movie.title}</Text>
-              <Text>{movie.year}</Text>
-              <Image
-                source={{uri: movie.posters.thumbnail}}
-                style={styles.thumbnail}
-              />
-            </View>
-            <Download />
-            <ListDataFromNet />
+            <CasesListView />     
           </ScrollView>
-          <View style={styles.tabrow}><Cell>首页</Cell><Cell/><Cell/><Cell/><Cell/></View>
         </View>
       </DrawerLayoutAndroid>
     );
@@ -261,6 +299,13 @@ var ListDataFromNet = React.createClass({
 var CELL_SIZE = 60;
 var CELL_MARGIN = 4;
 var styles = StyleSheet.create({
+  listView:{
+    flex: 1,
+    backgroundColor: '#F5FCFF',
+    paddingVertical: 10,
+    shadowColor: '#eee',
+    shadowRadius: 2,
+  },
   imagestyle: {
     width: 72,
     height: 72,
@@ -273,7 +318,13 @@ var styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#ddd',
+    margin: 10,
+    marginBottom: 5,
+    borderRadius: 5,
+    padding: 3,
+    borderWidth: 1, 
+    borderColor: 'red',
   },
   rightContainer: {
     flex: 1,
